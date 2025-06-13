@@ -1,0 +1,63 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 4.0.0"
+    }
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+resource "google_project_service" "iamcredentials" {
+  project = var.project_id
+  service = "iamcredentials.googleapis.com"
+}
+
+# Workload Identity Federation configuration for GitHub Actions
+resource "google_iam_workload_identity_pool" "github_actions" {
+  workload_identity_pool_id = var.pool_id
+  display_name              = var.pool_display_name
+  description              = var.pool_description
+  project                  = var.project_id
+}
+
+resource "google_iam_workload_identity_pool_provider" "github_actions" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_actions.workload_identity_pool_id
+  workload_identity_pool_provider_id = var.provider_id
+  display_name                       = var.provider_display_name
+  project                           = var.project_id
+
+  attribute_mapping = {
+    "google.subject"       = "assertion.sub"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.repository" = "assertion.repository"
+  }
+
+  oidc {
+    allowed_audiences = var.allowed_audiences
+    issuer_uri       = "https://token.actions.githubusercontent.com"
+  }
+}
+
+resource "google_service_account" "github_actions" {
+  account_id   = var.service_account_id
+  display_name = var.service_account_display_name
+  project      = var.project_id
+}
+
+resource "google_service_account_iam_member" "github_actions_workload_identity_user" {
+  service_account_id = google_service_account.github_actions.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
+}
+
+# Grant necessary roles to the service account
+resource "google_project_iam_member" "github_actions_editor" {
+  project = var.project_id
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+} 

@@ -1,0 +1,12 @@
+name = "auth-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+REDIRECT_URI = "https://auth-worker.david-6f5.workers.dev/callback"
+
+[observability.logs]
+enabled = true
+
+
+
