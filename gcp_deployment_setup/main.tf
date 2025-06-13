@@ -12,9 +12,16 @@ provider "google" {
   region  = var.region
 }
 
+# Enable required APIs
+resource "google_project_service" "iam" {
+  project = var.project_id
+  service = "iam.googleapis.com"
+}
+
 resource "google_project_service" "iamcredentials" {
   project = var.project_id
   service = "iamcredentials.googleapis.com"
+  depends_on = [google_project_service.iam]
 }
 
 # Workload Identity Federation configuration for GitHub Actions
@@ -23,6 +30,7 @@ resource "google_iam_workload_identity_pool" "github_actions" {
   display_name              = var.pool_display_name
   description              = var.pool_description
   project                  = var.project_id
+  depends_on = [google_project_service.iamcredentials]
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_actions" {
@@ -35,24 +43,28 @@ resource "google_iam_workload_identity_pool_provider" "github_actions" {
     "google.subject"       = "assertion.sub"
     "attribute.actor"      = "assertion.actor"
     "attribute.repository" = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
   }
 
   oidc {
     allowed_audiences = var.allowed_audiences
     issuer_uri       = "https://token.actions.githubusercontent.com"
   }
+
+  attribute_condition = "attribute.repository == '${var.github_repo}'"
 }
 
 resource "google_service_account" "github_actions" {
   account_id   = var.service_account_id
   display_name = var.service_account_display_name
   project      = var.project_id
+  depends_on = [google_project_service.iam]
 }
 
 resource "google_service_account_iam_member" "github_actions_workload_identity_user" {
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
+  member             = "principal://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/subject/${var.github_repo}"
 }
 
 # Grant necessary roles to the service account

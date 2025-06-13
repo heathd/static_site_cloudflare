@@ -17,9 +17,10 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
+    environment: GCP
     defaults:
       run:
-        working-directory: ./gcp-oauth-terraform
+        working-directory: ./gcp_deployment_setup
 
     steps:
     - name: Checkout
