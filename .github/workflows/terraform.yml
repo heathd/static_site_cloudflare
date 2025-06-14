@@ -40,6 +40,7 @@ jobs:
         token_format: 'access_token'
         create_credentials_file: true
         export_environment_variables: true
+        audience: '//iam.googleapis.com/projects/${{ secrets.GCP_PROJECT_ID }}/locations/global/workloadIdentityPools/${{ secrets.WIF_POOL_ID }}/providers/${{ secrets.WIF_PROVIDER_ID }}'
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v2'

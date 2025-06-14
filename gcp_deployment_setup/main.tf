@@ -49,7 +49,7 @@ resource "google_iam_workload_identity_pool_provider" "github_actions" {
   oidc {
     allowed_audiences = [
       "https://github.com/${var.github_repo}",
-      "https://iam.googleapis.com/projects/${var.project_id}/locations/global/workloadIdentityPools/${var.pool_id}/providers/${var.provider_id}"
+      "//iam.googleapis.com/projects/${var.project_id}/locations/global/workloadIdentityPools/${var.pool_id}/providers/${var.provider_id}"
     ]
     issuer_uri       = "https://token.actions.githubusercontent.com"
   }
