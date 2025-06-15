@@ -24,13 +24,6 @@ resource "google_project_service" "iamcredentials" {
   depends_on = [google_project_service.iam]
 }
 
-# Enable Identity-Aware Proxy API
-resource "google_project_service" "iap" {
-  project = var.project_id
-  service = "iap.googleapis.com"
-  depends_on = [google_project_service.iam]
-}
-
 # Workload Identity Federation configuration for GitHub Actions
 resource "google_iam_workload_identity_pool" "github_actions" {
   workload_identity_pool_id = var.pool_id
