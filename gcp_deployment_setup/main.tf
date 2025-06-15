@@ -89,4 +89,11 @@ resource "google_service_account_iam_member" "github_actions_service_account_use
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.serviceAccountUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
+}
+
+# Grant Service Usage Admin role to enable APIs
+resource "google_project_iam_member" "github_actions_service_usage_admin" {
+  project = var.project_id
+  role    = "roles/serviceusage.serviceUsageAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
 } 

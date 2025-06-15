@@ -27,9 +27,11 @@ resource "google_project_service" "cloudresourcemanager" {
   service = "cloudresourcemanager.googleapis.com"
 }
 
+# Enable Identity-Aware Proxy API
 resource "google_project_service" "iap" {
   project = var.project_id
   service = "iap.googleapis.com"
+  depends_on = [google_project_service.iam]
 }
 
 resource "google_project_service" "iamcredentials" {

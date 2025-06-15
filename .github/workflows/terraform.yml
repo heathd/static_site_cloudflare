@@ -21,6 +21,11 @@ jobs:
     defaults:
       run:
         working-directory: ./gcp-oauth-terraform
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      WIF_POOL_ID: ${{ vars.WIF_POOL_ID }}
+      WIF_PROVIDER_ID: ${{ vars.WIF_PROVIDER_ID }}
+      TF_VAR_REGION: ${{ vars.TF_VAR_REGION || 'us-central1' }}
 
     steps:
     - name: Checkout
@@ -40,7 +45,7 @@ jobs:
         token_format: 'access_token'
         create_credentials_file: true
         export_environment_variables: true
-        audience: '//iam.googleapis.com/projects/${{ secrets.GCP_PROJECT_ID }}/locations/global/workloadIdentityPools/${{ secrets.WIF_POOL_ID }}/providers/${{ secrets.WIF_PROVIDER_ID }}'
+        audience: '//iam.googleapis.com/projects/${{ vars.GCP_PROJECT_ID }}/locations/global/workloadIdentityPools/${{ vars.WIF_POOL_ID }}/providers/${{ vars.WIF_PROVIDER_ID }}'
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v2'
@@ -98,7 +103,7 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       env:
-        TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+        TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
         TF_VAR_region: ${{ vars.TF_VAR_REGION || 'us-central1' }}
         TF_VAR_support_email: ${{ secrets.SUPPORT_EMAIL }}
       run: terraform apply -auto-approve 
