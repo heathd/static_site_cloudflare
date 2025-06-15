@@ -41,7 +41,6 @@ resource "google_iap_brand" "default" {
   support_email     = var.support_email
   application_title = "Cloudflare Worker OAuth"
   project           = var.project_id
-  org_internal_only = false
 }
 
 resource "google_iap_client" "worker_oauth" {
