@@ -24,6 +24,13 @@ resource "google_project_service" "iamcredentials" {
   depends_on = [google_project_service.iam]
 }
 
+# Enable Identity-Aware Proxy API
+resource "google_project_service" "iap" {
+  project = var.project_id
+  service = "iap.googleapis.com"
+  depends_on = [google_project_service.iam]
+}
+
 # Workload Identity Federation configuration for GitHub Actions
 resource "google_iam_workload_identity_pool" "github_actions" {
   workload_identity_pool_id = var.pool_id
@@ -67,7 +74,7 @@ resource "google_service_account" "github_actions" {
 resource "google_service_account_iam_member" "github_actions_workload_identity_user" {
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principal://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/subject/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
 }
 
 # Grant necessary roles to the service account
@@ -75,4 +82,18 @@ resource "google_project_iam_member" "github_actions_editor" {
   project = var.project_id
   role    = "roles/editor"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+# Grant service account token creator role
+resource "google_service_account_iam_member" "github_actions_token_creator" {
+  service_account_id = google_service_account.github_actions.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
+}
+
+# Grant service account user role
+resource "google_service_account_iam_member" "github_actions_service_account_user" {
+  service_account_id = google_service_account.github_actions.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_actions.name}/attribute.repository/${var.github_repo}"
 } 
