@@ -48,7 +48,7 @@ jobs:
     - name: Verify Identity
       run: gcloud auth list
 
-      - name: Terraform Format
+    - name: Terraform Format
       id: fmt
       run: terraform fmt -check
       continue-on-error: true
