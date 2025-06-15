@@ -20,7 +20,7 @@ jobs:
     environment: GCP
     defaults:
       run:
-        working-directory: ./gcp_deployment_setup
+        working-directory: ./gcp-oauth-terraform
 
     steps:
     - name: Checkout
@@ -94,4 +94,8 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+        TF_VAR_region: ${{ vars.TF_VAR_REGION || 'us-central1' }}
+        TF_VAR_support_email: ${{ secrets.SUPPORT_EMAIL }}
       run: terraform apply -auto-approve 
