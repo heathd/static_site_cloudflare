@@ -45,7 +45,10 @@ jobs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v2'
 
-    - name: Terraform Format
+    - name: Verify Identity
+      run: gcloud auth list
+
+      - name: Terraform Format
       id: fmt
       run: terraform fmt -check
       continue-on-error: true
